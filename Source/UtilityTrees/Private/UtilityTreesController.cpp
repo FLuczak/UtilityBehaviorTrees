@@ -16,6 +16,13 @@ void AUtilityTreesController::Tick(float DeltaSeconds)
 		UtilityTimer = UtilityCheckInterval;
 	}
 
+	auto TempIndex = 0;
+	for (const auto Tree : Trees)
+	{
+		Tree->TickTimers(DeltaSeconds, TempIndex == CurrentTreeIndex);
+		TempIndex++;
+	}
+
 	Super::Tick(DeltaSeconds);
 }
 
@@ -28,7 +35,7 @@ void AUtilityTreesController::FindNewTree()
 
 	for (const auto Tree : Trees)
 	{
-		Utilities[TempIndex] = Tree->EvaluateUtility(GetPawn(),this);
+		Utilities[TempIndex] = Tree->EvaluateUtility(GetPawn(),this,TempIndex == CurrentTreeIndex);
 		TempIndex++;
 	}
 
@@ -46,6 +53,7 @@ void AUtilityTreesController::FindNewTree()
 
 	if(MaxUtilityIndex != -1)
 	{
+		Trees[MaxUtilityIndex]->ResetLastUsedTimer();
 		RunBehaviorTree(Trees[MaxUtilityIndex]);
 		CurrentTreeIndex = MaxUtilityIndex;
 	}
@@ -53,5 +61,9 @@ void AUtilityTreesController::FindNewTree()
 
 void AUtilityTreesController::BeginPlay()
 {
+	for (const auto Tree : Trees)
+	{
+		Tree->InitializeConsiderationInstances();
+	}
 	Super::BeginPlay();
 }
